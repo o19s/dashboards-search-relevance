@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { SEARCH_RELEVANCE_QUERY_SET_API } from '../../common';
+import { SEARCH_RELEVANCE_QUERY_SET_API, SEARCH_RELEVANCE_JUDGMENT_API } from '../../common';
 
 /**
  * Register client actions representing search relevance plugin APIs.
@@ -25,6 +25,19 @@ export default function searchRelevancePlugin(Client: any, config: any, componen
   searchRelevance.listQuerySets = ca({
     url: {
       fmt: `${SEARCH_RELEVANCE_QUERY_SET_API}/\${id}`,
+      req: {
+        id: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    method: 'GET',
+  });
+
+  searchRelevance.listJudgmentList = ca({
+    url: {
+      fmt: `${SEARCH_RELEVANCE_JUDGMENT_API}/\${id}`,
       req: {
         id: {
           type: 'string',

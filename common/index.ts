@@ -36,7 +36,7 @@ export const STATS_NODE_API_PATH = `${BASE_NODE_API_PATH}/stats`;
 // Search Relevance node APIs
 export const BASE_QUERYSET_NODE_API_PATH = `${BASE_NODE_API_PATH}/queryset`;
 export const BASE_EXPERIMENT_NODE_API_PATH = `${BASE_NODE_API_PATH}/experiment`;
-export const BASE_JUDGMENT_NODE_API_PATH = `${BASE_NODE_API_PATH}/judgment`;
+export const BASE_JUDGMENT_NODE_API_PATH = `${BASE_NODE_API_PATH}/judgments`;
 export const BASE_SEARCH_CONFIG_NODE_API_PATH = `${BASE_NODE_API_PATH}/search_configuration`;
 
 

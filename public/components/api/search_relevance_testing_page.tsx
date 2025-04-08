@@ -15,7 +15,7 @@ import {
   EuiCallOut,
   EuiCodeBlock,
 } from '@elastic/eui';
-import { postQuerySet, getQuerySets } from '../../services';
+import { postQuerySet, getQuerySets, getJudgmentList } from '../../services';
 import { CoreStart } from '../../../../../src/core/public';
 
 export interface TestProps {
@@ -53,7 +53,7 @@ export const QuerySetTester = ({ http }: TestProps) => {
     setError(null);
 
     try {
-      const listResult = await getQuerySets(id, http);
+      const listResult = await getJudgmentList(id, http);
       setGetResponse(listResult);
     } catch (err) {
       setError(err.message || 'An error occurred');
@@ -92,9 +92,9 @@ export const QuerySetTester = ({ http }: TestProps) => {
         <EuiSpacer size="m" />
       </EuiForm>
       <EuiForm component="form" onSubmit={handleGetSubmit}>
-        <EuiFormRow label="Get Query ID:">
+        <EuiFormRow label="Get Judgment List by ID:">
           <EuiFieldText
-            placeholder="Enter Get Query ID"
+            placeholder="Enter Judgment List ID"
             value={id}
             onChange={(e) => setId(e.target.value)}
             fullWidth

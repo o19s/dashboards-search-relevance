@@ -11,7 +11,7 @@ import {
   OpenSearchDashboardsResponseFactory,
   RequestHandlerContext,
 } from '../../../../src/core/server';
-import { BASE_QUERYSET_NODE_API_PATH } from '../../common';
+import { BASE_QUERYSET_NODE_API_PATH, BASE_JUDGMENT_NODE_API_PATH } from '../../common';
 import { getClientBasedOnDataSource } from '../common/helper';
 
 export function registerSearchRelevanceRoutes(
@@ -59,6 +59,17 @@ export function registerSearchRelevanceRoutes(
       },
     },
     searchRelevanceRoutesService.listQuerySets
+  );
+  router.get(
+    {
+      path: `${BASE_JUDGMENT_NODE_API_PATH}/{id}`,
+      validate: {
+        params: schema.object({
+          id: schema.string(),
+        }),
+      },
+    },
+    searchRelevanceRoutesService.listJudgmentList
   );
 }
 
@@ -130,6 +141,40 @@ export class SearchRelevanceRoutesService {
         body: {
           ok: true,
           resp: querysetResponse,
+        },
+      });
+    } catch (err) {
+      return res.ok({
+        body: {
+          resp: err.message,
+        },
+      });
+    }
+  };
+
+  listJudgmentList = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    const { id } = req.params;
+    const { data_source_id = '' } = req.params as { data_source_id?: string };
+    try {
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+
+      const judgmentListResponse = await callWithRequest('searchRelevance.listJudgmentList', {
+        id,
+      });
+      return res.ok({
+        body: {
+          ok: true,
+          resp: judgmentListResponse,
         },
       });
     } catch (err) {
