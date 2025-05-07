@@ -146,7 +146,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
     <EuiPageTemplate paddingSize="l" restrictWidth="100%">
       <EuiPageHeader
         pageTitle="Search Configuration"
-        description="Configure a new search configuration with query body and options"
+        description="Configure a new search configuration with query body and options."
         rightSideItems={[
           <EuiButtonEmpty
             onClick={handleCancel}
@@ -177,7 +177,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
                   label="Search Configuration Name"
                   error={nameError}
                   isInvalid={Boolean(nameError)}
-                  helpText="A unique name for this search configuration"
+                  helpText="A unique name for this search configuration."
                   fullWidth
                 >
                   <EuiFieldText
@@ -193,7 +193,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
 
                 <EuiFormRow
                   label="Index"
-                  helpText="Select an index for this search configuration"
+                  helpText="Select an index for this search configuration."
                   fullWidth
                 >
                   <EuiComboBox
@@ -212,7 +212,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
                   label="Query Body"
                   error={queryBodyError}
                   isInvalid={Boolean(queryBodyError)}
-                  helpText="Define the query body in JSON format"
+                  helpText="Define the query body in JSON format."
                   fullWidth
                 >
                   <EuiCodeEditor
@@ -252,7 +252,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
 
                 <EuiFormRow
                   label="Search Pipeline"
-                  helpText="Define the search pipeline to be used"
+                  helpText="Define the search pipeline to be used."
                   fullWidth
                 >
                   <EuiFieldText
@@ -263,7 +263,7 @@ export const SearchConfigurationCreate: React.FC<SearchConfigurationCreateProps>
                   />
                 </EuiFormRow>
 
-                <EuiFormRow label="Search Template" helpText="Define the search template" fullWidth>
+                <EuiFormRow label="Search Template" helpText="Define the search template." fullWidth>
                   <EuiFieldText
                     placeholder="Enter search template"
                     value={searchTemplate}
