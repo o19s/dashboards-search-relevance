@@ -115,17 +115,6 @@ export function registerSearchRelevanceRoutes(router: IRouter): void {
     },
     backendAction('GET', BackendEndpoints.SearchConfigurations)
   );
-  router.get(
-    {
-      path: `${ServiceEndpoints.QuerySets}/{id}`,
-      validate: {
-        params: schema.object({
-          id: schema.string(),
-        }),
-      },
-    },
-    backendAction('GET', BackendEndpoints.QuerySets)
-  );
   router.delete(
     {
       path: `${ServiceEndpoints.Experiments}/{id}`,

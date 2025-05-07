@@ -4,25 +4,30 @@
  */
 
 import {
+    EuiButton,
     EuiButtonEmpty,
+    EuiButtonIcon,
     EuiCallOut,
+    EuiFlexGroup,
+    EuiFlexItem,
+    EuiModal,
+    EuiModalBody,
+    EuiModalFooter,
+    EuiModalHeader,
+    EuiModalHeaderTitle,
     EuiPageHeader,
     EuiPageTemplate,
     EuiPanel,
+    EuiText,
     EuiResizableContainer,
-    EuiDescriptionList,
-    EuiDescriptionListTitle,
-    EuiDescriptionListDescription,
-    EuiSpacer,
   } from '@elastic/eui';
 import {
     TableListView,
-    reactRouterNavigate,
 } from '../../../../../src/plugins/opensearch_dashboards_react/public';  
 import React, { useEffect, useState } from 'react';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router-dom';
 import { CoreStart } from '../../../../../src/core/public';
-import { ServiceEndpoints } from '../../../common';
+import { ServiceEndpoints, SEARCH_NODE_API_PATH } from '../../../common';
 import { VisualComparison, convertFromSearchResult } from '../query_compare/search_result/visual_comparison/visual_comparison';
 import {
   SearchResults,
@@ -32,10 +37,9 @@ interface ExperimentViewProps extends RouteComponentProps<{ id: string }> {
   http: CoreStart['http'];
 }
 
-export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, history }) => {
+export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id }) => {
   const [experiment, setExperiment] = useState<any | null>(null);
   const [searchConfigurations, setSearchConfigurations] = useState<any | null>(null);
-  const [querySet, setQuerySet] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuery, setSelectedQuery] = useState<number | null>(null);
@@ -44,7 +48,10 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
   
 
   // Detailed experiment details
+  const [queries, setQueries] = useState<any[]>([]);
   const [queryEntries, setQueryEntries] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<any>({});
+  const [metricMeans, setMetricMeans] = useState<any>({});
   const [tableColumns, setTableColumns] = useState<any[]>([]);
 
   const sanitizeResponse = (response) => response?.hits?.hits?.[0]?._source || undefined;
@@ -62,20 +69,19 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
         setLoading(true);
         const _experiment = await http.get(ServiceEndpoints.Experiments + "/" + id).then(sanitizeResponse);
         const _searchConfigurations = _experiment ? await loadSearchConfigurations(_experiment.searchConfigurationList) : [];
-        const _querySet = _experiment ? await http.get(ServiceEndpoints.QuerySets + "/" + _experiment.querySetId).then(sanitizeResponse) : null;
+        // const _querySet = _experiment || await http.get(ServiceEndpoints.QuerySets + "/" + id).then(sanitizeResponse);
 
         if (_experiment && _searchConfigurations.length >= 2 && _searchConfigurations.every(Boolean)) {
           setExperiment(_experiment);
           setSearchConfigurations(_searchConfigurations);
-          setQuerySet(_querySet);
         } else {
           setError('No matching experiment found');
         }
       } catch (err) {
-        setExperiment(null);
         setError('Error loading experiment data');
         console.error(err);
       } finally {
+        setLoading(false);
       }
     };
 
@@ -96,6 +102,7 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
 
   useEffect(() => {
     if (experiment) {
+      setQueries(experiment.results.queryTexts)
       const metricNames = extractMetricNames(experiment)
       let _metrics = {}
       let _metricMeans = {}
@@ -165,10 +172,9 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
       })
 
       setQueryEntries(_queryEntries)
-      // setMetrics(_metrics);
-      // setMetricMeans(_metricMeans);
+      setMetrics(_metrics);
+      setMetricMeans(_metricMeans);
       setTableColumns(columns)
-      setLoading(false);
     }
   }, [experiment])
 
@@ -179,6 +185,7 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
 
   useEffect(() => {
     if (selectedQuery != null) {
+      const index = "someIndex"
       const query1 = {
         index: searchConfigurations[0].index,
         query: {
@@ -196,7 +203,7 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
         }
       }
 
-      http.post(ServiceEndpoints.GetSearchResults, {
+      http.post(SEARCH_NODE_API_PATH, {
           body: JSON.stringify({ query1, query2 }),
       })
       .then((res) => {
@@ -215,100 +222,66 @@ export const ExperimentView: React.FC<ExperimentViewProps> = ({ http, id, histor
     return {hits: filteredQueryEntries, total: filteredQueryEntries.length}
   }
 
-  const experimentDetails = (
-    <EuiPanel hasBorder={true}>
-      <EuiDescriptionList type="column" compressed>
-        <EuiDescriptionListTitle>Query Set</EuiDescriptionListTitle>
-        <EuiDescriptionListDescription>
-          <EuiButtonEmpty
-            size="xs"
-            {...reactRouterNavigate(history, `/querySet/view/${querySet?.id}`)}
-          >
-            {querySet?.name}
-          </EuiButtonEmpty>
-        </EuiDescriptionListDescription>
-        {searchConfigurations?.map((config, index) => (
-          <React.Fragment key={config.id}>
-            <EuiDescriptionListTitle>Search Configuration {index + 1}</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              <EuiButtonEmpty
-                size="xs"
-                {...reactRouterNavigate(history, `/searchConfiguration/view/${config.id}`)}
-              >
-                {config.name}
-              </EuiButtonEmpty>
-            </EuiDescriptionListDescription>
-          </React.Fragment>
-        ))}
-      </EuiDescriptionList>
-    </EuiPanel>
-  );
-
-  const resultsPane = (
-    <EuiPanel hasBorder paddingSize="l">
-      <EuiResizableContainer>
-        {(EuiResizablePanel, EuiResizableButton) => {
-          return (
-          <>
-            <EuiResizablePanel initialSize={50} minSize="15%">
-              {error ? (
-                <EuiCallOut title="Error" color="danger">
-                  <p>{error}</p>
-                </EuiCallOut>
-              ) : (
-                <TableListView
-                  entityName="Query"
-                  entityNamePlural="Queries"
-                  tableColumns={tableColumns}
-                  findItems={findQueries}
-                  loading={loading}
-                  pagination={{
-                    initialPageSize: 10,
-                    pageSizeOptions: [5, 10, 20, 50],
-                  }}
-                  search={{
-                    box: {
-                      incremental: true,
-                      placeholder: 'Query...',
-                      schema: true,
-                    },
-                  }}
-                />
-              )}
-            </EuiResizablePanel>
-
-            <EuiResizableButton />
-
-            <EuiResizablePanel initialSize={50} minSize="30%">
-              {selectedQuery != null && queryResult1 && queryResult2 && (
-                <VisualComparison
-                  queryResult1={queryResult1}
-                  queryResult2={queryResult2}
-                  queryText={queryEntries[selectedQuery].queryText}
-                  resultText1={`${searchConfigurations[0].name} result`}
-                  resultText2={`${searchConfigurations[1].name} result`}
-                />
-              )}
-            </EuiResizablePanel>
-          </>
-        )}}
-      </EuiResizableContainer>
-    </EuiPanel>
-  );
-
   return (
     <EuiPageTemplate paddingSize="l" restrictWidth="90%">
       <EuiPageHeader
         pageTitle="Experiment Visualization"
       />
-      {experimentDetails}
-      <EuiSpacer size="l" />
-      {resultsPane}
+
+      <EuiPanel hasBorder paddingSize="l">
+        <EuiResizableContainer>
+          {(EuiResizablePanel, EuiResizableButton) => {
+            return (
+            <>
+              <EuiResizablePanel initialSize={50} minSize="15%">
+                {error ? (
+                  <EuiCallOut title="Error" color="danger">
+                    <p>{error}</p>
+                  </EuiCallOut>
+                ) : (
+                  <TableListView
+                    entityName="Query"
+                    entityNamePlural="Queries"
+                    tableColumns={tableColumns}
+                    findItems={findQueries}
+                    loading={loading}
+                    pagination={{
+                      initialPageSize: 10,
+                      pageSizeOptions: [5, 10, 20, 50],
+                    }}
+                    search={{
+                      box: {
+                        incremental: true,
+                        placeholder: 'Query...',
+                        schema: true,
+                      },
+                    }}
+                  />
+                )}
+              </EuiResizablePanel>
+
+              <EuiResizableButton />
+
+              <EuiResizablePanel initialSize={50} minSize="30%">
+                {selectedQuery != null && queryResult1 && queryResult2 && (
+                  <VisualComparison
+                    queryResult1={queryResult1}
+                    queryResult2={queryResult2}
+                    queryText={queryEntries[selectedQuery].queryText}
+                    resultText1={`${searchConfigurations[0].name} result`}
+                    resultText2={`${searchConfigurations[1].name} result`}
+                  />
+                )}
+              </EuiResizablePanel>
+            </>
+          )}}
+        </EuiResizableContainer>
+      </EuiPanel>
+
+
     </EuiPageTemplate>
   );
 
 };
 
-export const ExperimentViewWithRouter = withRouter(ExperimentView);
-
-export default ExperimentViewWithRouter;
+export default ExperimentView;
