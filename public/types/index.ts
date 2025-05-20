@@ -104,7 +104,7 @@ export type EvaluationExperiment =
   (ExperimentBase & {
     type: "UBI_EVALUATION";
     searchConfigurationId: string;
-    judgmentId: string;
+    judgmentSetId: string;
   })
 
 export const printType = (type: string) => {
@@ -259,8 +259,8 @@ export const toExperiment = (source: any): ParseResult<Experiment> => {
     if (source.searchConfigurationList.length < 1) {
       return parseError("Missing search configuration for UBI evaluation (searchConfigurationList).");
     }
-    if (!source.judgmentList || source.judgmentList.length < 1) {
-      return parseError("Missing judgment for UBI evaluation (judgmentList).");
+    if (!source.judgmentSetList || source.judgmentSetList.length < 1) {
+      return parseError("Missing judgment set for UBI evaluation (judgmentSetList).");
     }
     return {
       success: true,
@@ -272,7 +272,7 @@ export const toExperiment = (source: any): ParseResult<Experiment> => {
         querySetId: source.querySetId,
         timestamp: source.timestamp,
         searchConfigurationId: source.searchConfigurationList[0],
-        judgmentId: source.judgmentList[0],
+        judgmentSetId: source.judgmentSetList[0],
         size,
       },
     };

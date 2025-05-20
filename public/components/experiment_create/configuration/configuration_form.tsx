@@ -28,7 +28,7 @@ const getInitialFormData = (templateType: string): ConfigurationFormData => {
     case 'Search Evaluation':
       return {
         ...baseData,
-        judgmentList: [],
+        judgmentSetList: [],
         type: "UBI_EVALUATION",
       };
     default:
@@ -87,7 +87,7 @@ export const ConfigurationForm = ({ templateType, onSave }: ConfigurationFormPro
             <EuiFlexGroup justifyContent="flexEnd">
               <EuiFlexItem grow={false}>
                 <EuiFormRow hasEmptyLabelSpace>
-                  <EuiButton onClick={handleSave}>Save Judgement</EuiButton>
+                  <EuiButton onClick={handleSave}>Save Judgment Set</EuiButton>
                 </EuiFormRow>
               </EuiFlexItem>
             </EuiFlexGroup>

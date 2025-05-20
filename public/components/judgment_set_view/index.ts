@@ -3,4 +3,4 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export { JudgmentCreateWithRouter } from './judgment_create';
+export { JudgmentSetView } from './judgment_set_view';

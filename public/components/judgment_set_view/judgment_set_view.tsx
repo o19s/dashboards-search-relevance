@@ -18,16 +18,16 @@ import {
 import { CoreStart } from '../../../../../src/core/public';
 import { ServiceEndpoints } from '../../../common';
 
-interface JudgmentViewProps extends RouteComponentProps<{ id: string }> {
+interface JudgmentSetViewProps extends RouteComponentProps<{ id: string }> {
   http: CoreStart['http'];
 }
 
-export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
-  const [judgment, setJudgment] = useState<any | null>(null);
+export const JudgmentSetView: React.FC<JudgmentSetViewProps> = ({ http, id }) => {
+  const [judgmentSet, setJudgmentSet] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const JudgmentViewPane: React.FC = () => {
+  const JudgmentSetViewPane: React.FC = () => {
     const formatJson = (json: string) => {
       try {
         return JSON.stringify(JSON.parse(json), null, 2);
@@ -39,17 +39,17 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
     return (
       <EuiForm>
         <EuiFormRow
-          label="Judgment Name"
+          label="Judgment Set Name"
           fullWidth
         >
-          <EuiText>{judgment.name}</EuiText>
+          <EuiText>{judgmentSet.name}</EuiText>
         </EuiFormRow>
 
         <EuiFormRow
           label="Type"
           fullWidth
         >
-          <EuiText>{judgment.type}</EuiText>
+          <EuiText>{judgmentSet.type}</EuiText>
         </EuiFormRow>
 
         <EuiFormRow
@@ -57,7 +57,7 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
           fullWidth
         >
           <EuiText>
-            {Object.entries(judgment.metadata).map(([key, value]) => (
+            {Object.entries(judgmentSet.metadata).map(([key, value]) => (
               <p key={key}>
                 <strong>{key}:</strong> {JSON.stringify(value)}
               </p>
@@ -66,7 +66,7 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
         </EuiFormRow>
 
         <EuiFormRow
-          label="JudgmentScores"
+          label="JudgmentSetScores"
           fullWidth
         >
           <EuiPanel
@@ -75,7 +75,7 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
             style={{ maxHeight: '200px', overflow: 'auto' }}
           >
             <EuiCodeBlock language="json" paddingSize="s" isCopyable>
-              {JSON.stringify(judgment.judgmentScores, null, 2)}
+              {JSON.stringify(judgmentSet.judgmentScores, null, 2)}
             </EuiCodeBlock>
           </EuiPanel>
         </EuiFormRow>
@@ -86,7 +86,7 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
   };
 
   useEffect(() => {
-    const fetchJudgment = async () => {
+    const fetchJudgmentSet = async () => {
       try {
         setLoading(true);
         const response = await http.get(ServiceEndpoints.Judgments);
@@ -94,12 +94,12 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
         const filteredList = list.filter((item: any) => item.id === id);
 
         if (filteredList.length > 0) {
-          setJudgment(filteredList[0]);
+          setJudgmentSet(filteredList[0]);
         } else {
-          setError('No matching judgment found');
+          setError('No matching judgment set found');
         }
       } catch (err) {
-        setError('Error loading judgment data');
+        setError('Error loading judgment set data');
         // eslint-disable-next-line no-console
         console.error(err);
       } finally {
@@ -107,11 +107,11 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
       }
     };
 
-    fetchJudgment();
+    fetchJudgmentSet();
   }, [http, id]);
 
   if (loading) {
-    return <div>Loading judgment data...</div>;
+    return <div>Loading judgment set data...</div>;
   }
 
   if (error) {
@@ -121,15 +121,15 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
   return (
     <EuiPageTemplate paddingSize="l" restrictWidth="100%">
       <EuiPageHeader
-        pageTitle="Judgment Details"
-        description="View the details of your judgment"
+        pageTitle="Judgment Set Details"
+        description="View the details of your judgment set"
       />
       <EuiSpacer size="l" />
       <EuiPanel hasBorder={true}>
-        <JudgmentViewPane />
+        <JudgmentSetViewPane />
       </EuiPanel>
     </EuiPageTemplate>
   );
 };
 
-export default JudgmentView;
+export default JudgmentSetView;

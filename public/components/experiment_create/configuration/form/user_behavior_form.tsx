@@ -4,7 +4,7 @@ import { ResultListComparisonFormData, IndexOption } from '../types';
 import { CoreStart } from '../../../../../src/core/public';
 import { SearchConfigForm } from '../search_configuration_form';
 import { QuerySetsComboBox } from './query_sets_combo_box';
-import { JudgmentsComboBox } from './judgments_combo_box';
+import { JudgmentSetsComboBox } from './judgment_sets_combo_box';
 
 interface UserBehaviorFormProps {
   formData: ResultListComparisonFormData;
@@ -20,16 +20,16 @@ export const UserBehaviorForm = ({
   const [selectedSearchConfigs, setSelectedSearchConfigs] = useState<IndexOption[]>([]);
   const [querySetOptions, setQuerySetOptions] = useState<IndexOption[]>([]);
   const [k, setK] = useState<number>(10);
-  const [judgmentOptions, setJudgmentOptions] = useState<IndexOption[]>([]);
+  const [judgmentSetOptions, setJudgmentSetOptions] = useState<IndexOption[]>([]);
 
   const handleQuerySetsChange = (selectedOptions: any[]) => {
     setQuerySetOptions(selectedOptions || []);
     onChange('querySetId', selectedOptions?.[0]?.value);
   };
 
-  const handleJudgmentsChange = (selectedOptions: IndexOption[]) => {
-    setJudgmentOptions(selectedOptions || []);
-    onChange('judgmentList', selectedOptions.map((o) => o.value));
+  const handleJudgmentSetsChange = (selectedOptions: IndexOption[]) => {
+    setJudgmentSetOptions(selectedOptions || []);
+    onChange('judgmentSetList', selectedOptions.map((o) => o.value));
   };
 
   const handleKChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,9 +76,9 @@ export const UserBehaviorForm = ({
         />
       </EuiFlexItem>
       <EuiFlexItem>
-        <JudgmentsComboBox
-          selectedOptions={judgmentOptions}
-          onChange={handleJudgmentsChange}
+        <JudgmentSetsComboBox
+          selectedOptions={judgmentSetOptions}
+          onChange={handleJudgmentSetsChange}
           http={http}
         />
       </EuiFlexItem>

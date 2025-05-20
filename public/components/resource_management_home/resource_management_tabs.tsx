@@ -17,9 +17,9 @@ import { TemplateCards } from '../experiment_create/template_card/template_cards
 import ExperimentViewWithRouter from '../experiment_view/experiment_view';
 import ExperimentListingWithRoute from '../experiment_listing/experiment_listing';
 import { useOpenSearchDashboards } from '../../../../../src/plugins/opensearch_dashboards_react/public';
-import { JudgmentCreateWithRouter } from '../judgment_create';
-import { JudgmentListingWithRoute } from '../judgment_listing';
-import { JudgmentView } from '../judgment_view';
+import { JudgmentSetCreateWithRouter } from '../judgment_set_create';
+import { JudgmentSetListingWithRoute } from '../judgment_set_listing';
+import { JudgmentSetView } from '../judgment_set_view';
 
 const TAB_STYLES = {
   mainTabs: {
@@ -67,7 +67,7 @@ export const ResourceManagementTabs = ({
     { id: 'experiment', name: 'Experiment' },
     { id: 'querySet', name: 'Query Set' },
     { id: 'searchConfiguration', name: 'Search Configuration' },
-    { id: 'judgment', name: 'Judgment' },
+    { id: 'judgmentSet', name: 'Judgment Set' },
   ];
 
   const renderSubTabs = (tabKey: string, tabs: Array<{ id: string; label: string }>) => (
@@ -162,23 +162,23 @@ export const ResourceManagementTabs = ({
           </>
         );
 
-      case 'judgment':
+      case 'judgmentSet':
         return (
           <>
-            {renderSubTabs('judgment', [
-              { id: 'list', label: 'Manage Judgments' },
-              { id: 'create', label: 'Create a Judgment' },
+            {renderSubTabs('judgmentSet', [
+              { id: 'list', label: 'Manage Judgment Sets' },
+              { id: 'create', label: 'Create a Judgment Set' },
             ])}
             <EuiSpacer size="m" />
             <EuiPanel>
               {selectedSubTabs === 'list' && entityAction != 'view' ? (
-                <JudgmentListingWithRoute http={http} />
+                <JudgmentSetListingWithRoute http={http} />
               ) : (
                 <></>
               )}
-              {entityAction === 'view' ? <JudgmentView http={http} id={entityId}/> : <></>}
+              {entityAction === 'view' ? <JudgmentSetView http={http} id={entityId}/> : <></>}
               {selectedSubTabs === 'create' ? (
-                <JudgmentCreateWithRouter http={http} notifications={notifications} history={history}/>
+                <JudgmentSetCreateWithRouter http={http} notifications={notifications} history={history}/>
               ) : (
                 <></>
               )}

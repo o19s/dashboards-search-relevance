@@ -21,21 +21,21 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import { ServiceEndpoints } from '../../../common';
 
-enum JudgmentType {
+enum JudgmentSetType {
   LLM = 'LLM_JUDGMENT',
   UBI = 'UBI_JUDGMENT',
 }
 
-interface JudgmentCreateProps {
+interface JudgmentSetCreateProps {
   http: any;
   notifications: any;
   history: any;
 }
 
-export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notifications, history }) => {
+export const JudgmentSetCreate: React.FC<JudgmentSetCreateProps> = ({ http, notifications, history }) => {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
-  const [type, setType] = useState<JudgmentType>(JudgmentType.LLM);
+  const [type, setType] = useState<JudgmentSetType>(JudgmentSetType.LLM);
 
   // LLM specific states
   const [querySetOptions, setQuerySetOptions] = useState<Array<{ label: string; value: string }>>([]);
@@ -93,7 +93,7 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
 
   // Load data on component mount
   useEffect(() => {
-    if (type === JudgmentType.LLM) {
+    if (type === JudgmentSetType.LLM) {
       fetchQuerySets();
       fetchSearchConfigs();
     }
@@ -110,7 +110,7 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
       setNameError('');
     }
 
-    if (type === JudgmentType.LLM) {
+    if (type === JudgmentSetType.LLM) {
       if (selectedQuerySet.length === 0) {
         notifications.toasts.addDanger('Please select a query set');
         isValid = false;
@@ -129,13 +129,13 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
   };
 
   // Handle form submission
-  const createJudgment = useCallback(() => {
+  const createJudgmentSet = useCallback(() => {
     if (!validateForm()) {
       return;
     }
 
     const payload =
-      type === JudgmentType.LLM
+      type === JudgmentSetType.LLM
         ? {
             name,
             type,
@@ -154,11 +154,11 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
     http
       .put(ServiceEndpoints.Judgments, { body: JSON.stringify(payload) })
       .then(() => {
-        notifications.toasts.addSuccess('Judgment created successfully');
-        history.push('/judgment');
+        notifications.toasts.addSuccess('Judgment set created successfully');
+        history.push('/judgmentSet');
       })
       .catch((error: any) => {
-        notifications.toasts.addDanger(`Failed to create judgment: ${error.message}`);
+        notifications.toasts.addDanger(`Failed to create judgment set: ${error.message}`);
       });
   }, [
     validateForm,
@@ -176,32 +176,32 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
   ]);
 
   const handleCancel = () => {
-    history.push('/judgment');
+    history.push('/judgment_set');
   };
 
   return (
     <EuiPageTemplate paddingSize="l" restrictWidth="100%">
       <EuiPageHeader
-        pageTitle="Judgment"
-        description="Configure a new judgment."
+        pageTitle="Judgment Set"
+        description="Configure a new judgment set."
         rightSideItems={[
           <EuiButtonEmpty
             onClick={handleCancel}
             iconType="cross"
             size="s"
-            data-test-subj="cancelJudgmentButton"
+            data-test-subj="cancelJudgmentSetButton"
           >
             Cancel
           </EuiButtonEmpty>,
           <EuiButton
-            onClick={createJudgment}
+            onClick={createJudgmentSet}
             fill
             size="s"
             iconType="check"
-            data-test-subj="createJudgmentButton"
+            data-test-subj="createJudgmentSetButton"
             color="primary"
           >
-            Create Judgment
+            Create Judgment Set
           </EuiButton>,
         ]}
       />
@@ -213,7 +213,7 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
               label="Name"
               isInvalid={nameError.length > 0}
               error={nameError}
-              helpText="A unique name for this judgment."
+              helpText="A unique name for this judgment set."
               fullWidth
             >
               <EuiFieldText
@@ -233,15 +233,15 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
             <EuiCompressedFormRow label="Type" fullWidth>
               <EuiSelect
                 options={[
-                  { value: JudgmentType.LLM, text: 'LLM Judgment' },
-                  { value: JudgmentType.UBI, text: 'UBI Judgment' },
+                  { value: JudgmentSetType.LLM, text: 'LLM Judgment' },
+                  { value: JudgmentSetType.UBI, text: 'UBI Judgment' },
                 ]}
                 value={type}
-                onChange={(e) => setType(e.target.value as JudgmentType)}
+                onChange={(e) => setType(e.target.value as JudgmentSetType)}
               />
             </EuiCompressedFormRow>
 
-            {type === JudgmentType.LLM ? (
+            {type === JudgmentSetType.LLM ? (
               <>
                 <EuiCompressedFormRow label="Query Set" fullWidth>
                   <EuiComboBox
@@ -313,4 +313,4 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
   );
 };
 
-export const JudgmentCreateWithRouter = withRouter(JudgmentCreate);
+export const JudgmentSetCreateWithRouter = withRouter(JudgmentSetCreate);

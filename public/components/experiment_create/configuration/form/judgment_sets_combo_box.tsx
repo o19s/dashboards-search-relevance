@@ -4,45 +4,45 @@ import { IndexOption } from '../types';
 import { CoreStart } from '../../../../../src/core/public';
 import { ServiceEndpoints } from '../../../../../common';
 
-interface JudgmentsComboBoxProps {
-  selectedOptions: JudgmentOption[];
-  onChange: (selectedOptions: JudgmentOption[]) => void;
+interface JudgmentSetsComboBoxProps {
+  selectedOptions: JudgmentSetOption[];
+  onChange: (selectedOptions: JudgmentSetOption[]) => void;
   http: CoreStart['http'];
 }
 
-export const JudgmentsComboBox = ({
+export const JudgmentSetsComboBox = ({
   selectedOptions,
   onChange,
   http,
-}: JudgmentsComboBoxProps) => {
-  const [judgmentOptions, setJudgmentOptions] = useState<IndexOption[]>([]);
+}: JudgmentSetsComboBoxProps) => {
+  const [judgmentSetOptions, setJudgmentSetOptions] = useState<IndexOption[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchJudgments = async () => {
+    const fetchJudgmentSets = async () => {
       try {
         const data = await http.get(ServiceEndpoints.Judgments);
-        const options = data.hits.hits.map((judgment: any) => ({
-          label: judgment._source.name,
-          value: judgment._source.id,
+        const options = data.hits.hits.map((judgmentSet: any) => ({
+          label: judgmentSet._source.name,
+          value: judgmentSet._source.id,
         }));
-        setJudgmentOptions(options);
+        setJudgmentSetOptions(options);
       } catch (error) {
-        console.error('Failed to fetch judgments', error);
-        setJudgmentOptions([]);
+        console.error('Failed to fetch judgment sets', error);
+        setJudgmentSetOptions([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchJudgments();
+    fetchJudgmentSets();
   }, [http]);
 
   return (
-    <EuiFormRow label="Judgments">
+    <EuiFormRow label="Judgment Sets">
       <EuiComboBox
-        placeholder={isLoading ? 'Loading...' : 'Select judgments'}
-        options={judgmentOptions}
+        placeholder={isLoading ? 'Loading...' : 'Select judgment sets'}
+        options={judgmentSetOptions}
         selectedOptions={selectedOptions}
         onChange={onChange}
         isClearable
@@ -54,4 +54,4 @@ export const JudgmentsComboBox = ({
       />
     </EuiFormRow>
   );
-}; 
+};

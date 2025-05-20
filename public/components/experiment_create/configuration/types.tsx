@@ -26,7 +26,7 @@ export interface IndexOption {
 export interface ResultListComparisonFormData extends BaseFormData {}
 
 export interface UserBehaviorFormData extends BaseFormData {
-  judgmentList: string[];
+  judgmentSetList: string[];
 }
 
 export interface LLMFormData extends BaseFormData {

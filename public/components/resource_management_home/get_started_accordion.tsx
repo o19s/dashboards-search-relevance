@@ -86,7 +86,7 @@ export function GetStartedAccordion(props: GetStartedAccordionProps) {
               }
             >
               <EuiText>
-                Document-based judgement scores will be collect and aggregated into evaluation metrics.
+                Document-based judgment scores will be collect and aggregated into evaluation metrics.
               </EuiText>
             </EuiCard>
           </EuiFlexItem>

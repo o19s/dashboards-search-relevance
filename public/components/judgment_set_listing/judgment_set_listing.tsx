@@ -24,37 +24,37 @@ import { useConfig } from '../../contexts/date_format_context';
 import { ServiceEndpoints } from '../../../common';
 import moment from 'moment';
 
-interface JudgmentListingProps extends RouteComponentProps {
+interface JudgmentSetListingProps extends RouteComponentProps {
   http: CoreStart['http'];
 }
 
-export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history }) => {
+export const JudgmentSetListing: React.FC<JudgmentSetListingProps> = ({ http, history }) => {
   const { dateFormat } = useConfig();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [judgmentToDelete, setJudgmentToDelete] = useState<any>(null);
+  const [judgmentSetToDelete, setJudgmentSetToDelete] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Handle delete function
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      const response = await http.delete(`${ServiceEndpoints.Judgments}/${judgmentToDelete.id}`);
+      const response = await http.delete(`${ServiceEndpoints.Judgments}/${judgmentSetToDelete.id}`);
       console.log('Delete successful:', response);
 
       // Close modal and clear state
       setShowDeleteModal(false);
-      setJudgmentToDelete(null);
+      setJudgmentSetToDelete(null);
       setError(null);
 
       // Force table refresh
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
-      setError('Failed to delete judgment');
+      setError('Failed to delete judgment set');
       setShowDeleteModal(false);
-      setJudgmentToDelete(null);
+      setJudgmentSetToDelete(null);
     } finally {
       setIsLoading(false);
     }
@@ -69,14 +69,14 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
       sortable: true,
       render: (
         name: string,
-        judgment: {
+        judgmentSet: {
           id: string;
         }
       ) => (
         <>
           <EuiButtonEmpty
             size="xs"
-            {...reactRouterNavigate(history, `/judgment/view/${judgment.id}`)}
+            {...reactRouterNavigate(history, `/judgment_set/view/${judgmentSet.id}`)}
           >
             {name}
           </EuiButtonEmpty>
@@ -85,7 +85,7 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
     },
     {
       field: 'type',
-      name: 'Judgment Type',
+      name: 'Type',
       dataType: 'string',
       sortable: true,
     },
@@ -108,7 +108,7 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
           iconType="trash"
           color="danger"
           onClick={() => {
-            setJudgmentToDelete(item);
+            setJudgmentSetToDelete(item);
             setShowDeleteModal(true);
           }}
         />
@@ -116,7 +116,7 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
     },
   ];
 
-  const mapJudgmentFields = (obj: any) => {
+  const mapJudgmentSetFields = (obj: any) => {
     return {
       id: obj._source.id,
       name: obj._source.name,
@@ -126,12 +126,12 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
   };
 
   // Data fetching function
-  const findJudgments = async (search: any) => {
+  const findJudgmentSets = async (search: any) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await http.get(ServiceEndpoints.Judgments);
-      const list = response ? response.hits.hits.map(mapJudgmentFields) : [];
+      const list = response ? response.hits.hits.map(mapJudgmentSetFields) : [];
       // TODO: too many reissued requests on search
       const filteredList = search
         ? list.filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
@@ -141,7 +141,7 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
         hits: filteredList,
       };
     } catch (err) {
-      setError('Failed to load judgments');
+      setError('Failed to load judgment sets');
       return {
         total: 0,
         hits: [],
@@ -153,8 +153,8 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
   return (
     <EuiPageTemplate paddingSize="l" restrictWidth="100%">
       <EuiPageHeader
-        pageTitle="Judgments"
-        description="View and manage your existing judgments. Click on a judgment name to view details."
+        pageTitle="Judgment Sets"
+        description="View and manage your existing judgment sets. Click on a name to view details."
         rightSideItems={[
           <EuiButtonEmpty
             iconType="arrowLeft"
@@ -175,11 +175,11 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
         ) : (
           <TableListView
             key={refreshKey}
-            headingId="judgmentListingHeading"
-            entityName="Judgment"
-            entityNamePlural="Judgments"
+            headingId="judgmentSetListingHeading"
+            entityName="JudgmentSet"
+            entityNamePlural="JudgmentSets"
             tableColumns={tableColumns}
-            findItems={findJudgments}
+            findItems={findJudgmentSets}
             loading={isLoading}
             pagination={{
               initialPageSize: 10,
@@ -188,7 +188,7 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
             search={{
               box: {
                 incremental: true,
-                placeholder: 'Search judgments...',
+                placeholder: 'Search judgment sets...',
                 schema: true,
               },
             }}
@@ -203,20 +203,20 @@ export const JudgmentListing: React.FC<JudgmentListingProps> = ({ http, history 
       </EuiFlexItem>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && judgmentToDelete && (
+      {showDeleteModal && judgmentSetToDelete && (
         <DeleteModal
           onClose={() => {
             setShowDeleteModal(false);
-            setJudgmentToDelete(null);
+            setJudgmentSetToDelete(null);
           }}
           onConfirm={handleDelete}
-          itemName={judgmentToDelete.name}
+          itemName={judgmentSetToDelete.name}
         />
       )}
     </EuiPageTemplate>
   );
 };
 
-export const JudgmentListingWithRoute = withRouter(JudgmentListing);
+export const JudgmentSetListingWithRoute = withRouter(JudgmentSetListing);
 
-export default JudgmentListingWithRoute;
+export default JudgmentSetListingWithRoute;

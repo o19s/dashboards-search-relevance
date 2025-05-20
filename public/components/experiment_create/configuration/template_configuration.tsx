@@ -16,7 +16,7 @@ export const TemplateConfiguration = ({
   history,
 }: TemplateConfigurationProps) => {
   /**
-   * Config Form will collect querySetId along with other experiment_type related fields to generate judgments.
+   * Config Form will collect querySetId along with other experiment_type related fields to generate judgment set.
    */
   const [configFormData, setConfigFormData] = useState<ConfigurationFormData | null>(null);
 
