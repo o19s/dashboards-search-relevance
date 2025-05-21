@@ -278,7 +278,7 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
                 </EuiCompressedFormRow>
 
                 <EuiCompressedFormRow 
-                  label="K Value"
+                  label="@k"
                   helpText="The number of documents from the result list to include in the judging process."
                   fullWidth
                 >
@@ -315,7 +315,11 @@ export const JudgmentCreate: React.FC<JudgmentCreateProps> = ({ http, notificati
                   />
                 </EuiCompressedFormRow>
 
-                <EuiCompressedFormRow label="Max Rank" fullWidth>
+                <EuiCompressedFormRow
+                  label="@k"
+                  helpText="The number of documents to include from the result list."
+                  fullWidth
+                >
                   <EuiFieldNumber
                     value={maxRank}
                     onChange={(e) => setMaxRank(parseInt(e.target.value, 10))}
