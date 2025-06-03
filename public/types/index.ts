@@ -125,7 +125,7 @@ export const printType = (type: string) => {
     case ExperimentType.POINTWISE_EVALUATION:
       return 'Evaluation';
     case ExperimentType.HYBRID_OPTIMIZER:
-      return "HybridOptimizer";
+      return "Hybrid Optimizer";
     default:
       return 'Unknown';
   }
