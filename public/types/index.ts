@@ -84,6 +84,7 @@ export const enum ExperimentStatus {
 export const enum ExperimentType {
   PAIRWISE_COMPARISON = 'PAIRWISE_COMPARISON',
   POINTWISE_EVALUATION = 'POINTWISE_EVALUATION',
+  HYBRID_OPTIMIZER = 'HYBRID_OPTIMIZER',
 }
 
 export type ExperimentBase = {
@@ -95,7 +96,10 @@ export type ExperimentBase = {
   size: number;
 };
 
-export type Experiment = PairwiseComparisonExperiment | EvaluationExperiment;
+export type Experiment =
+  | PairwiseComparisonExperiment
+  | EvaluationExperiment
+  | HybridOptimizerExperiment
 
 export type PairwiseComparisonExperiment = ExperimentBase & {
   type: ExperimentType.PAIRWISE_COMPARISON;
@@ -108,12 +112,20 @@ export type EvaluationExperiment = ExperimentBase & {
   judgmentId: string;
 };
 
+export type HybridOptimizerExperiment = ExperimentBase & {
+  type: ExperimentType.HYBRID_OPTIMIZER;
+  searchConfigurationId: string;
+  judgmentId: string;
+};
+
 export const printType = (type: string) => {
   switch (type) {
     case ExperimentType.PAIRWISE_COMPARISON:
       return 'Comparison';
     case ExperimentType.POINTWISE_EVALUATION:
       return 'Evaluation';
+    case ExperimentType.HYBRID_OPTIMIZER:
+      return "HybridOptimizer";
     default:
       return 'Unknown';
   }
