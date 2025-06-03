@@ -4,11 +4,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { EuiButton, EuiFlexGroup, EuiFlexItem, EuiFormRow } from '@elastic/eui';
+import { EuiSpacer } from '@elastic/eui';
 import { ResultListComparisonForm } from './form/result_list_comparison_form';
 import { PointwiseExperimentForm } from './form/pointwise_experiment_form';
 import { HybridOptimizerExperimentForm } from './form/hybrid_optimizer_experiment_form';
-import { LLMForm } from './form/llm_form';
 import {
   ConfigurationFormProps,
   ConfigurationFormData,
@@ -20,6 +19,7 @@ import {
 } from './types';
 import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
 import { ExperimentType } from '../../../types/index';
+import { GetStartedAccordion } from '../../resource_management_home/get_started_accordion';
 
 const getInitialFormData = (templateType: TemplateType): ConfigurationFormData => {
   const baseData = {
@@ -44,7 +44,7 @@ const getInitialFormData = (templateType: TemplateType): ConfigurationFormData =
       return {
         ...baseData,
         judgmentList: [],
-        type: "HYBRID_OPTIMIZER",
+        type: ExperimentType.HYBRID_OPTIMIZER,
       };
     default:
       return (baseData as unknown) as
@@ -111,5 +111,11 @@ export const ConfigurationForm = ({ templateType, onSave }: ConfigurationFormPro
     }
   };
 
-  return <>{renderForm()}</>;
+  return (
+    <>
+      <GetStartedAccordion isOpen={true} />
+      <EuiSpacer size="l" />
+      {renderForm()}
+    </>
+  );
 };
