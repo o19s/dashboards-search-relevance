@@ -65,7 +65,7 @@ export const EvaluationExperimentView: React.FC<EvaluationExperimentViewProps> =
 
         const resultIds = Object.entries(_experiment.results).map(([key, value]) => value[inputExperiment.searchConfigurationId]).filter(id => id !== undefined);
         const query = {
-            index: ".plugins-search-relevance-evaluation-result",
+            index: "search-relevance-evaluation-result",
             query: {
               terms: {
                 _id: resultIds
