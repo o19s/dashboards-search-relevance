@@ -27,7 +27,7 @@ export const ServiceEndpoints = Object.freeze({
   Experiments: `${SEARCH_RELEVANCE_WORKBENCH_BASE_PATH}/experiments`,
 } as const);
 
-const SEARCH_RELEVANCE_PLUGIN_BASE_PATH = '/_plugins/search_relevance';
+const SEARCH_RELEVANCE_PLUGIN_BASE_PATH = '/_plugins/_search_relevance';
 export const BackendEndpoints = Object.freeze({
   QuerySets: `${SEARCH_RELEVANCE_PLUGIN_BASE_PATH}/query_sets`,
   SearchConfigurations: `${SEARCH_RELEVANCE_PLUGIN_BASE_PATH}/search_configurations`,
