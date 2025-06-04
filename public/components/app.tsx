@@ -26,7 +26,7 @@ import JudgmentView from './judgment_view/judgment_view';
 import { QuerySetCreateWithRouter } from './query_set_create/query_set_create';
 import { SearchConfigurationCreateWithRouter } from './search_config_create/search_config_create';
 import { JudgmentCreateWithRouter } from './judgment_create/judgment_create';
-import { GetStartedAccordion } from './resource_management_home/get_started_accordion';
+import { GetStartedAccordion } from './experiment_create/get_started_accordion';
 import { TemplateType, routeToTemplateType } from './experiment_create/configuration/types';
 import { TemplateConfigurationWithRouter } from './experiment_create/configuration/template_configuration';
 

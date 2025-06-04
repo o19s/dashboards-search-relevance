@@ -14,7 +14,7 @@ import {
   EuiTitle,
   EuiAccordion,
 } from '@elastic/eui';
-import { TemplateType } from '../experiment_create/configuration/types';
+import { TemplateType } from './configuration/types';
 
 interface GetStartedAccordionProps {
   isOpen?: boolean;

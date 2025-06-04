@@ -13,7 +13,7 @@ import {
   TemplateType,
 } from './types';
 import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
-import { GetStartedAccordion } from '../../resource_management_home/get_started_accordion';
+import { GetStartedAccordion } from '../get_started_accordion';
 
 const getInitialFormData = (templateType: TemplateType): ConfigurationFormData => {
   const baseData = {
