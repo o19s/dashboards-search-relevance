@@ -21,7 +21,6 @@ import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearc
 import { ExperimentType } from '../../../types/index';
 import { GetStartedAccordion } from '../../resource_management_home/get_started_accordion';
 
-
 const getInitialFormData = (templateType: TemplateType): ConfigurationFormData => {
   const baseData = {
     querySetId: '',
