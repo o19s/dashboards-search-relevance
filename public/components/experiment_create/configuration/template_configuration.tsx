@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { EuiFlexItem, EuiFlexGroup, EuiTitle, EuiSpacer, EuiLoadingSpinner, EuiCallOut } from '@elastic/eui';
 import { withRouter } from 'react-router-dom';
-import { ConfigurationForm } from './configuration_form';
-import { ConfigurationActions } from './configuration_action';
-import { TemplateConfigurationProps, ConfigurationFormData, SearchConfigFromData } from './types';
-import { Routes, ServiceEndpoints } from '../../../../common';
+import { ConfigurationForm, ConfigurationFormRef } from './configuration_form';
+import { TemplateConfigurationProps, ConfigurationFormData } from './types';
+import { ServiceEndpoints } from '../../../../common';
 import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
 import { EuiPanel } from '@elastic/eui';
+import { ConfigurationActions } from './configuration_action';
 
 export const TemplateConfiguration = ({
   templateType,
@@ -15,58 +15,58 @@ export const TemplateConfiguration = ({
   onClose,
   history,
 }: TemplateConfigurationProps) => {
-  const [configFormData, setConfigFormData] = useState<ConfigurationFormData | null>(null);
-  const [isFormValid, setIsFormValid] = useState<boolean>(false);
   const [experimentId, setExperimentId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [showTemplateConfigError, setShowTemplateConfigError] = useState<boolean>(false);
-  const [validateTrigger, setValidateTrigger] = useState<number>(0);
 
-  const handleConfigSave = (data: ConfigurationFormData, isValid: boolean) => {
-    setConfigFormData(data);
-    setIsFormValid(isValid);
-  };
+  const configurationFormRef = useRef<ConfigurationFormRef>(null);
 
   const {
     services: { http, notifications },
   } = useOpenSearchDashboards();
 
   const handleNext = async () => {
-    // Increment validateTrigger to tell ConfigurationForm to validate
-    setValidateTrigger(prev => prev + 1);
-    setTimeout(async () => {
-      // Check isFormValid AFTER ConfigurationForm has had a chance to validate
-      if (!isFormValid) { // Use the updated state
+    setShowTemplateConfigError(false); // Clear previous errors
+
+    if (configurationFormRef.current) {
+      const { data, isValid } = configurationFormRef.current.validateAndGetData(); // Get data and validity directly
+
+      if (!isValid || data === null) {
         setShowTemplateConfigError(true);
         return;
       }
 
-      setShowTemplateConfigError(false); // Hide the general error if valid
+      // If we reach here, `data` is guaranteed to be valid and not null
+      try {
+        setIsCreating(true);
+        const response = await http.post(ServiceEndpoints.Experiments, {
+          body: JSON.stringify(data), // Use the validated data received from child
+        });
 
-      if (configFormData) { // configFormData should be valid if isFormValid is true
-        try {
-          setIsCreating(true);
-          const response = await http.post(ServiceEndpoints.Experiments, {
-            body: JSON.stringify(configFormData),
-          });
-
-          if (response.experiment_id) {
-            setExperimentId(response.experiment_id);
-            notifications.toasts.addSuccess(`Experiment ${response.experiment_id} created successfully`);
-            history.push(`/experiment/`);
-          } else {
-            throw new Error('No experiment ID received');
+        if (response.experiment_id) {
+          setExperimentId(response.experiment_id);
+          notifications.toasts.addSuccess(`Experiment ${response.experiment_id} created successfully`);
+          history.push(`/experiment/`);
+          if (configurationFormRef.current) {
+            configurationFormRef.current.clearFormErrors();
           }
-        } catch (err) {
-          notifications.toasts.addError(err, {
-            title: 'Failed to create experiment',
-          });
-        } finally {
-          setIsCreating(false);
+        } else {
+          throw new Error('No experiment ID received');
         }
+      } catch (err) {
+        notifications.toasts.addError(err, {
+          title: 'Failed to create experiment',
+        });
+      } finally {
+        setIsCreating(false);
       }
-    }, 0); // Use a 0ms timeout to put this on the next tick of the event loop
+    } else {
+      // This case should ideally not happen if the form is rendered,
+      // but it's a good safeguard.
+      setShowTemplateConfigError(true);
+      notifications.toasts.addError('Form component not ready. Please try again.');
+    }
   };
 
 
@@ -84,8 +84,7 @@ export const TemplateConfiguration = ({
           <EuiSpacer size="m" />
           <ConfigurationForm
             templateType={templateType}
-            onSave={handleConfigSave}
-            validateTrigger={validateTrigger} // Pass the validateTrigger prop
+            ref={configurationFormRef}
           />
         </EuiFlexItem>
 

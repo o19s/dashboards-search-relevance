@@ -13,7 +13,7 @@ interface PointwiseExperimentFormProps {
 }
 
 export interface PointwiseExperimentFormRef {
-  validateAndSetErrors: () => boolean;
+  validateAndSetErrors: () => { isValid: boolean; data: PointwiseExperimentFormData; };
   clearAllErrors: () => void;
 }
 
@@ -37,38 +37,30 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
     };
 
     useEffect(() => {
-      if (formData.querySetId) {
-        setQuerySetOptions([{ label: formData.querySetId, value: formData.querySetId }]);
-      } else {
-        setQuerySetOptions([]);
-      }
-      if (formData.size !== undefined && formData.size !== null) {
-        setK(formData.size);
-      } else {
-        setK(10);
-      }
-      if (formData.searchConfigurationList && formData.searchConfigurationList.length > 0) {
-        setSelectedSearchConfigs(
-          formData.searchConfigurationList.map((config) => ({ label: config, value: config }))
-        );
-      } else {
-        setSelectedSearchConfigs([]);
-      }
-      if (formData.judgmentList && formData.judgmentList.length > 0) {
-        setJudgmentOptions(
-          (formData.judgmentList as string[]).map((judgment) => ({ label: judgment, value: judgment }))
-        );
-      } else {
-        setJudgmentOptions([]);
-      }
+      setQuerySetOptions(formData.querySetId ? [{ label: formData.querySetId, value: formData.querySetId }] : []);
+      setK(formData.size ?? 10);
+      setSelectedSearchConfigs(
+        formData.searchConfigurationList ? formData.searchConfigurationList.map((config) => ({ label: config, value: config })) : []
+      );
+      setJudgmentOptions(
+        (formData.judgmentList as string[])?.length > 0 ? (formData.judgmentList as string[]).map((judgment) => ({ label: judgment, value: judgment })) : []
+      );
       clearAllErrors();
-    }, [formData]);
+    }, [formData]); // Dependency on formData ensures re-initialization when parent's formData changes
 
-    const validateAndSetErrors = (): boolean => {
+
+    const validateAndSetErrors = (): { isValid: boolean; data: PointwiseExperimentFormData; } => {
       let isValid = true;
+      const currentData: PointwiseExperimentFormData = {
+        querySetId: querySetOptions[0]?.value || '',
+        size: k,
+        searchConfigurationList: selectedSearchConfigs.map(c => c.value),
+        judgmentList: judgmentOptions.map(j => j.value),
+        type: formData.type // Preserve the type from the initial formData
+      };
 
       // Validate Query Set
-      if (!querySetOptions.length) {
+      if (!currentData.querySetId) { // Validate against currentData
         setQuerySetError(['Please select a query set.']);
         isValid = false;
       } else {
@@ -76,7 +68,7 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
       }
 
       // Validate K Value
-      if (isNaN(k) || k < 1) {
+      if (isNaN(currentData.size) || currentData.size < 1) { // Validate against currentData
         setKError(['K value must be a positive number.']);
         isValid = false;
       } else {
@@ -84,7 +76,7 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
       }
 
       // Validate Search Configuration
-      if (!selectedSearchConfigs.length) {
+      if (currentData.searchConfigurationList.length === 0) { // Validate against currentData
         setSearchConfigError(['Please select at least one search configuration.']);
         isValid = false;
       } else {
@@ -92,14 +84,14 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
       }
 
       // Validate Judgments
-      if (!judgmentOptions.length) {
+      if (currentData.judgmentList.length === 0) { // Validate against currentData
         setJudgmentError(['Please select at least one judgment list.']);
         isValid = false;
       } else {
         setJudgmentError([]);
       }
 
-      return isValid;
+      return { isValid, data: currentData }; // Return the validation result and the current data
     };
 
     // Expose the validateAndSetErrors and clearAllErrors functions to the parent via ref
@@ -110,8 +102,10 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
 
     const handleQuerySetsChange = (selectedOptions: IndexOption[]) => {
       setQuerySetOptions(selectedOptions || []);
-      onChange('querySetId', selectedOptions?.[0]?.value);
-      // Clear error immediately on valid change IF an error was previously set
+      const newValue = selectedOptions?.[0]?.value || '';
+      if (formData.querySetId !== newValue) {
+        onChange('querySetId', newValue);
+      }
       if (selectedOptions.length > 0 && querySetError.length > 0) {
         setQuerySetError([]);
       }
@@ -119,8 +113,10 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
 
     const handleJudgmentsChange = (selectedOptions: IndexOption[]) => {
       setJudgmentOptions(selectedOptions || []);
-      onChange('judgmentList', selectedOptions.map((o) => o.value));
-      // Clear error immediately on valid change IF an error was previously set
+      const newValues = selectedOptions.map((o) => o.value);
+      if (JSON.stringify(formData.judgmentList) !== JSON.stringify(newValues)) {
+        onChange('judgmentList', newValues);
+      }
       if (selectedOptions.length > 0 && judgmentError.length > 0) {
         setJudgmentError([]);
       }
@@ -129,8 +125,9 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
     const handleKChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = parseInt(e.target.value, 10);
       setK(value);
-      onChange('size', value);
-      // Clear error immediately on valid change IF an error was previously set
+      if (formData.size !== value) {
+        onChange('size', value);
+      }
       if (!isNaN(value) && value >= 1 && kError.length > 0) {
         setKError([]);
       }
@@ -138,8 +135,10 @@ export const PointwiseExperimentForm = forwardRef<PointwiseExperimentFormRef, Po
 
     const handleSearchConfigChange = (selectedOptions: IndexOption[]) => {
       setSelectedSearchConfigs(selectedOptions);
-      onChange('searchConfigurationList', selectedOptions.map((o) => o.value));
-      // Clear error immediately on valid change IF an error was previously set
+      const newValues = selectedOptions.map((o) => o.value);
+      if (JSON.stringify(formData.searchConfigurationList) !== JSON.stringify(newValues)) {
+        onChange('searchConfigurationList', newValues);
+      }
       if (selectedOptions.length > 0 && searchConfigError.length > 0) {
         setSearchConfigError([]);
       }

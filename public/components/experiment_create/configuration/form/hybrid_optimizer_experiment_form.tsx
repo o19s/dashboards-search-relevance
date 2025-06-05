@@ -7,7 +7,7 @@ import { QuerySetsComboBox } from './query_sets_combo_box';
 import { JudgmentsComboBox } from './judgments_combo_box';
 
 export interface HybridOptimizerExperimentFormRef {
-  validateAndSetErrors: () => boolean;
+  validateAndSetErrors: () => { isValid: boolean; data: HybridOptimizerExperimentFormData; };
   clearAllErrors: () => void;
 }
 
@@ -21,24 +21,10 @@ export const HybridOptimizerExperimentForm = forwardRef<
   HybridOptimizerExperimentFormRef,
   HybridOptimizerExperimentFormProps
 >(({ formData, onChange, http }, ref) => {
-  const [querySetOptions, setQuerySetOptions] = useState<IndexOption[]>(
-    formData?.querySetId
-      ? [{ label: formData.querySetId, value: formData.querySetId }]
-      : []
-  );
-  const [selectedSearchConfigs, setSelectedSearchConfigs] = useState<IndexOption[]>(
-    Array.isArray(formData?.searchConfigurationList)
-      ? formData.searchConfigurationList.map((config) => ({ label: config, value: config }))
-      : []
-  );
-  const [k, setK] = useState<number>(
-    formData?.size !== undefined && formData?.size !== null ? formData.size : 10
-  );
-  const [judgmentOptions, setJudgmentOptions] = useState<IndexOption[]>(
-    Array.isArray(formData?.judgmentList)
-      ? formData.judgmentList.map((judgment) => ({ label: judgment, value: judgment }))
-      : []
-  );
+  const [querySetOptions, setQuerySetOptions] = useState<IndexOption[]>([]);
+  const [selectedSearchConfigs, setSelectedSearchConfigs] = useState<IndexOption[]>([]);
+  const [k, setK] = useState<number>(10);
+  const [judgmentOptions, setJudgmentOptions] = useState<IndexOption[]>([]);
 
   const [querySetError, setQuerySetError] = useState<string[]>([]);
   const [kError, setKError] = useState<string[]>([]);
@@ -69,14 +55,23 @@ export const HybridOptimizerExperimentForm = forwardRef<
         ? formData.judgmentList.map((judgment) => ({ label: judgment, value: judgment }))
         : []
     );
-    clearAllErrors();
+    clearAllErrors(); // Clear errors on formData prop change
   }, [formData]);
 
-  const validateAndSetErrors = (): boolean => {
+  const validateAndSetErrors = (): { isValid: boolean; data: HybridOptimizerExperimentFormData; } => {
     let isValid = true;
 
+    // Construct the current data object from internal states for validation
+    const currentData: HybridOptimizerExperimentFormData = {
+      querySetId: querySetOptions[0]?.value || '',
+      size: k,
+      searchConfigurationList: selectedSearchConfigs.map(c => c.value),
+      judgmentList: judgmentOptions.map(j => j.value),
+      type: formData.type, // Preserve the 'type' from the initial formData
+    };
+
     // Validate Query Set
-    if (!querySetOptions.length) {
+    if (!currentData.querySetId) {
       setQuerySetError(['Please select a query set.']);
       isValid = false;
     } else {
@@ -84,15 +79,15 @@ export const HybridOptimizerExperimentForm = forwardRef<
     }
 
     // Validate K Value
-    if (isNaN(k) || k < 1) {
+    if (isNaN(currentData.size) || currentData.size < 1) {
       setKError(['K value must be a positive number.']);
       isValid = false;
     } else {
       setKError([]);
     }
 
-    // Validate Search Configuration (maxNumberOfOptions is 1, so exactly one is needed)
-    if (selectedSearchConfigs.length !== 1) {
+    // Validate Search Configuration (exactly one is needed for HybridOptimizer)
+    if (currentData.searchConfigurationList.length !== 1) {
       setSearchConfigError(['Please select exactly one search configuration.']);
       isValid = false;
     } else {
@@ -100,14 +95,14 @@ export const HybridOptimizerExperimentForm = forwardRef<
     }
 
     // Validate Judgments
-    if (!judgmentOptions.length) {
+    if (!currentData.judgmentList.length) {
       setJudgmentError(['Please select at least one judgment list.']);
       isValid = false;
     } else {
       setJudgmentError([]);
     }
 
-    return isValid;
+    return { isValid, data: currentData }; // Return the validation status AND the current data
   };
 
   useImperativeHandle(ref, () => ({
@@ -117,8 +112,10 @@ export const HybridOptimizerExperimentForm = forwardRef<
 
   const handleQuerySetsChange = (selectedOptions: IndexOption[]) => {
     setQuerySetOptions(selectedOptions || []);
-    onChange('querySetId', selectedOptions?.[0]?.value);
-    // Clear error immediately on valid change IF an error was previously set
+    const newValue = selectedOptions?.[0]?.value || '';
+    if (formData.querySetId !== newValue) {
+      onChange('querySetId', newValue);
+    }
     if (selectedOptions.length > 0 && querySetError.length > 0) {
       setQuerySetError([]);
     }
@@ -126,8 +123,10 @@ export const HybridOptimizerExperimentForm = forwardRef<
 
   const handleJudgmentsChange = (selectedOptions: IndexOption[]) => {
     setJudgmentOptions(selectedOptions || []);
-    onChange('judgmentList', selectedOptions.map((o) => o.value));
-    // Clear error immediately on valid change IF an error was previously set
+    const newValues = selectedOptions.map((o) => o.value);
+    if (JSON.stringify(formData.judgmentList) !== JSON.stringify(newValues)) {
+      onChange('judgmentList', newValues);
+    }
     if (selectedOptions.length > 0 && judgmentError.length > 0) {
       setJudgmentError([]);
     }
@@ -136,8 +135,9 @@ export const HybridOptimizerExperimentForm = forwardRef<
   const handleKChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     setK(value);
-    onChange('size', value);
-    // Clear error immediately on valid change IF an error was previously set
+    if (formData.size !== value) {
+      onChange('size', value);
+    }
     if (!isNaN(value) && value >= 1 && kError.length > 0) {
       setKError([]);
     }
@@ -145,7 +145,10 @@ export const HybridOptimizerExperimentForm = forwardRef<
 
   const handleSearchConfigChange = (selectedOptions: IndexOption[]) => {
     setSelectedSearchConfigs(selectedOptions);
-    onChange('searchConfigurationList', selectedOptions.map((o) => o.value));
+    const newValues = selectedOptions.map((o) => o.value);
+    if (JSON.stringify(formData.searchConfigurationList) !== JSON.stringify(newValues)) {
+      onChange('searchConfigurationList', newValues);
+    }
     // Clear error immediately on valid change (assuming exactly 1 is needed)
     if (selectedOptions.length === 1 && searchConfigError.length > 0) {
       setSearchConfigError([]);
