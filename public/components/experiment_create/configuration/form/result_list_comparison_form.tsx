@@ -3,16 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react'; // Add forwardRef and useImperativeHandle
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { EuiFlexGroup, EuiFlexItem, EuiFormRow, EuiFieldNumber } from '@elastic/eui';
 import { OptionLabel, ResultListComparisonFormData } from '../types';
 import { CoreStart } from '../../../../../src/core/public';
 import { SearchConfigForm } from '../search_configuration_form';
 import { QuerySetsComboBox } from './query_sets_combo_box';
 
-// 1. Define a Ref interface for ResultListComparisonForm
 export interface ResultListComparisonFormRef {
-  validateAndSetErrors: () => boolean;
+  validateAndSetErrors: () => { isValid: boolean; data: ResultListComparisonFormData; };
   clearAllErrors: () => void;
 }
 
@@ -22,37 +21,22 @@ interface ResultListComparisonFormProps {
   http: CoreStart['http'];
 }
 
-// 2. Make ResultListComparisonForm a forwardRef component
 export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, ResultListComparisonFormProps>(
   ({ formData, onChange, http }, ref) => {
-    // Defensive initialization of states from formData
-    const [querySetOptions, setQuerySetOptions] = useState<OptionLabel[]>(
-      formData?.querySetId
-        ? [{ label: formData.querySetId, value: formData.querySetId }]
-        : []
-    );
-    const [selectedSearchConfigs, setSelectedSearchConfigs] = useState<OptionLabel[]>(
-      Array.isArray(formData?.searchConfigurationList)
-        ? formData.searchConfigurationList.map((config) => ({ label: config, value: config }))
-        : []
-    );
-    const [k, setK] = useState<number>(
-      formData?.size !== undefined && formData?.size !== null ? formData.size : 10
-    );
+    const [querySetOptions, setQuerySetOptions] = useState<OptionLabel[]>([]);
+    const [selectedSearchConfigs, setSelectedSearchConfigs] = useState<OptionLabel[]>([]);
+    const [k, setK] = useState<number>(10);
 
-    // 3. Add local validation states (errors)
     const [querySetError, setQuerySetError] = useState<string[]>([]);
     const [kError, setKError] = useState<string[]>([]);
     const [searchConfigError, setSearchConfigError] = useState<string[]>([]);
 
-    // 4. Function to clear all local error states
     const clearAllErrors = () => {
       setQuerySetError([]);
       setKError([]);
       setSearchConfigError([]);
     };
 
-    // useEffect to update internal state if formData prop changes (e.g., template type switch)
     useEffect(() => {
       setQuerySetOptions(
         formData?.querySetId
@@ -65,17 +49,21 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
           : []
       );
       setK(formData?.size !== undefined && formData?.size !== null ? formData.size : 10);
-
-      // CRUCIAL: Clear all errors when formData changes (e.g., template type switch)
       clearAllErrors();
     }, [formData]);
 
-    // 5. This function will run validation and set the error messages.
-    const validateAndSetErrors = (): boolean => {
+    const validateAndSetErrors = (): { isValid: boolean; data: ResultListComparisonFormData; } => {
       let isValid = true;
 
+      const currentData: ResultListComparisonFormData = {
+        querySetId: querySetOptions[0]?.value || '',
+        size: k,
+        searchConfigurationList: selectedSearchConfigs.map(c => c.value),
+        type: formData.type,
+      };
+
       // Validate Query Set
-      if (!querySetOptions.length) {
+      if (!currentData.querySetId) {
         setQuerySetError(['Please select a query set.']);
         isValid = false;
       } else {
@@ -83,26 +71,24 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
       }
 
       // Validate K Value
-      if (isNaN(k) || k < 1) {
+      if (isNaN(currentData.size) || currentData.size < 1) {
         setKError(['K value must be a positive number.']);
         isValid = false;
       } else {
         setKError([]);
       }
 
-      // Validate Search Configuration (assuming maxNumberOfOptions is 2, so at least 2 are needed)
-      // Adjust this validation based on the actual requirements for maxNumberOfOptions
-      if (selectedSearchConfigs.length < 2) { // Assuming 2 configurations are required for comparison
+      // Validate Search Configuration (at least two are needed for comparison)
+      if (currentData.searchConfigurationList.length < 2) {
         setSearchConfigError(['Please select at least two search configurations to compare.']);
         isValid = false;
       } else {
         setSearchConfigError([]);
       }
 
-      return isValid;
+      return { isValid, data: currentData };
     };
 
-    // Expose the validateAndSetErrors and clearAllErrors functions to the parent via ref
     useImperativeHandle(ref, () => ({
       validateAndSetErrors,
       clearAllErrors,
@@ -110,8 +96,11 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
 
     const handleQuerySetsChange = (selectedOptions: OptionLabel[]) => {
       setQuerySetOptions(selectedOptions || []);
-      onChange('querySetId', selectedOptions?.[0]?.value);
-      // Clear error immediately on valid change IF an error was previously set
+      const newValue = selectedOptions?.[0]?.value || '';
+      // Optimize onChange call
+      if (formData.querySetId !== newValue) {
+        onChange('querySetId', newValue);
+      }
       if (selectedOptions.length > 0 && querySetError.length > 0) {
         setQuerySetError([]);
       }
@@ -120,8 +109,10 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
     const handleKChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = parseInt(e.target.value, 10);
       setK(value);
-      onChange('size', value);
-      // Clear error immediately on valid change
+      // Optimize onChange call
+      if (formData.size !== value) {
+        onChange('size', value);
+      }
       if (!isNaN(value) && value >= 1 && kError.length > 0) {
         setKError([]);
       }
@@ -129,8 +120,11 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
 
     const handleSearchConfigChange = (selectedOptions: OptionLabel[]) => {
       setSelectedSearchConfigs(selectedOptions);
-      onChange('searchConfigurationList', selectedOptions.map((o) => o.value));
-      // Clear error immediately on valid change (assuming at least 2 are needed)
+      const newValues = selectedOptions.map((o) => o.value);
+      // Optimize onChange call
+      if (JSON.stringify(formData.searchConfigurationList) !== JSON.stringify(newValues)) {
+        onChange('searchConfigurationList', newValues);
+      }
       if (selectedOptions.length >= 2 && searchConfigError.length > 0) {
         setSearchConfigError([]);
       }
@@ -141,10 +135,9 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
         <EuiFlexItem>
           <EuiFlexGroup gutterSize="m" direction="row" style={{ maxWidth: 600 }}>
             <EuiFlexItem grow={4}>
-              {/* 7. Wrap QuerySetsComboBox in EuiFormRow for label and validation */}
               <EuiFormRow
                 label="Query Set"
-                isInvalid={querySetError.length > 0} // Only invalid if there's an error message
+                isInvalid={querySetError.length > 0}
                 error={querySetError}
               >
                 <QuerySetsComboBox
@@ -156,7 +149,6 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
               </EuiFormRow>
             </EuiFlexItem>
             <EuiFlexItem grow={1}>
-              {/* 7. Wrap EuiFieldNumber in EuiFormRow for label and validation */}
               <EuiFormRow
                 label="K Value"
                 helpText="The number of documents to include from the result list."
@@ -169,17 +161,16 @@ export const ResultListComparisonForm = forwardRef<ResultListComparisonFormRef, 
                   onChange={handleKChange}
                   min={1}
                   fullWidth
-                  isInvalid={kError.length > 0} // Add isInvalid to EuiFieldNumber itself too
+                  isInvalid={kError.length > 0}
                 />
               </EuiFormRow>
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiFlexItem>
         <EuiFlexItem>
-          {/* 7. Wrap SearchConfigForm in EuiFormRow for label and validation */}
           <EuiFormRow
             label="Search Configurations"
-            helpText={`Select ${2} search configuration${2 > 1 ? 's' : ''} to compare against each other.`} // Hardcoding 2 as per SearchConfigForm prop
+            helpText={`Select ${2} search configuration${2 > 1 ? 's' : ''} to compare against each other.`}
             isInvalid={searchConfigError.length > 0}
             error={searchConfigError}
           >
