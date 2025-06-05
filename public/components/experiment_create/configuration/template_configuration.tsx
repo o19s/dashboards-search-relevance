@@ -11,7 +11,7 @@ import { EuiPanel } from '@elastic/eui';
 import { ConfigurationForm } from './configuration_form';
 import { ConfigurationActions } from './configuration_action';
 import { TemplateConfigurationProps, ConfigurationFormData, SearchConfigFromData } from './types';
-import { ServiceEndpoints } from '../../../../common';
+import { Routes, ServiceEndpoints } from '../../../../common';
 import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
 export const TemplateConfiguration = ({
   templateType,
@@ -47,22 +47,23 @@ export const TemplateConfiguration = ({
         body: JSON.stringify(configFormData),
       });
 
-      if (response.experiment_id) {
-        setExperimentId(response.experiment_id);
-        notifications.toasts.addSuccess(
-          `Experiment ${response.experiment_id} created successfully`
-        );
-        history.push(`/experiment/`);
-      } else {
-        throw new Error('No experiment ID received');
+        if (response.experiment_id) {
+          setExperimentId(response.experiment_id);
+          notifications.toasts.addSuccess(`Experiment ${response.experiment_id} created successfully`);
+          history.push(Routes.Home);
+        } else {
+          throw new Error('No experiment ID received');
+        }
+      } catch (err) {
+        console.error('Failed to create experiment', err);
+        notifications.toasts.addError(err, {
+          title: 'Failed to create experiment',
+        });
+      } finally {
+        setIsCreating(false);
       }
-    } catch (err) {
-      console.error('Failed to create experiment', err);
-      notifications.toasts.addError(err, {
-        title: 'Failed to create experiment',
-      });
-    } finally {
-      setIsCreating(false);
+    } else {
+      console.log('Validation failed: Please fill in all required fields');
     }
   };
 
