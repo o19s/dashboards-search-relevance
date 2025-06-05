@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { ConfigurationForm } from './configuration_form';
 import { ConfigurationActions } from './configuration_action';
 import { TemplateConfigurationProps, ConfigurationFormData, SearchConfigFromData } from './types';
-import { ServiceEndpoints } from '../../../../common';
+import { Routes, ServiceEndpoints } from '../../../../common';
 import { useOpenSearchDashboards } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
 import { EuiPanel } from '@elastic/eui';
 export const TemplateConfiguration = ({
@@ -42,7 +42,7 @@ export const TemplateConfiguration = ({
         if (response.experiment_id) {
           setExperimentId(response.experiment_id);
           notifications.toasts.addSuccess(`Experiment ${response.experiment_id} created successfully`);
-          history.push(`/experiment/`);
+          history.push(Routes.Home);
         } else {
           throw new Error('No experiment ID received');
         }
