@@ -64,6 +64,7 @@ export const EvaluationExperimentView: React.FC<EvaluationExperimentViewProps> =
         const _querySet = _experiment && await http.get(ServiceEndpoints.QuerySets + "/" + inputExperiment.querySetId).then(sanitizeResponse);
         const _judgmentSet = _experiment && await http.get(ServiceEndpoints.Judgments + "/" + inputExperiment.judgmentId).then(sanitizeResponse);
 
+        // the .filter(Boolean) is used to filter out undefineds which show up for queries that are ZSR.
         const resultIds = Object.entries(_experiment.results).map(([key, value]) => value[inputExperiment.searchConfigurationId]).filter(Boolean);
         
         const query = {
