@@ -56,14 +56,14 @@ export const JudgmentView: React.FC<JudgmentViewProps> = ({ http, id }) => {
           </EuiText>
         </EuiFormRow>
 
-        <EuiFormRow label="JudgmentScores" fullWidth>
+        <EuiFormRow label="JudgmentRatings" fullWidth>
           <EuiPanel
             paddingSize="s"
             hasShadow={false}
             style={{ maxHeight: '200px', overflow: 'auto' }}
           >
             <EuiCodeBlock language="json" paddingSize="s" isCopyable>
-              {JSON.stringify(judgment.judgmentScores, null, 2)}
+              {JSON.stringify(judgment.judgmentRatings, null, 2)}
             </EuiCodeBlock>
           </EuiPanel>
         </EuiFormRow>
