@@ -9,7 +9,7 @@
 ## Summary
 In search applications, tuning relevance is a constant, iterative exercise to bring the right search results to your end users. The tooling in this repository aims to help the search relevance engineer and business user create the best search experience possible for application users without hiding internals from engineers who want to go deep into the details.
 
-Behind the scenes, the plugin uses the [Search Relevance OpenSearch plugin](https://opensearch.org/docs/latest/automating-configurations/index/) for resource management for each tool provided. For example, most use cases involve configuring and creating search configurations, query sets, and judgements. All of these resources are created, updated, deleted, and maintained by the Search Relevance plugin. When users are satisfied with the improvements to relevancy then they take the output and manually deploy the changes into their environment.
+Behind the scenes, the plugin uses the [Search Relevance OpenSearch plugin](https://github.com/opensearch-project/search-relevance) for resource management for each tool provided. For example, most use cases involve configuring and creating search configurations, query sets, and judgements. All of these resources are created, updated, deleted, and maintained by the Search Relevance plugin. When users are satisfied with the improvements to relevancy then they take the output and manually deploy the changes into their environment.
 
 For tutorials on how to leverage these tools, see [here](https://docs.opensearch.org/docs/latest/search-plugins/search-relevance/).
 
