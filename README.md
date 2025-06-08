@@ -13,6 +13,9 @@ Behind the scenes, the plugin uses the [Search Relevance OpenSearch plugin](http
 
 For tutorials on how to leverage these tools, see [here](https://docs.opensearch.org/docs/latest/search-plugins/search-relevance/).
 
+> [!IMPORTANT]  
+> While shipping with OpenSearch, you must OPT IN to this feature.  To enable this go to *Dashboard Management* -> *advanced setting* -> *Search relevance* -> turn on the toggle -> don’t forget to save.
+
 # Tools
 ## Query Comparison Tool
 The Query Comparison tool allows users to enter a plain text search query, run it with two different Query DSLs and compare the results side by side.
