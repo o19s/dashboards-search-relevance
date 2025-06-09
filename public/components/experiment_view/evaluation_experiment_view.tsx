@@ -81,7 +81,10 @@ export const EvaluationExperimentView: React.FC<EvaluationExperimentViewProps> =
         }
 
         // Get ratings from the already fetched judgment set
-        const judgments = judgmentSet?.judgmentRatings?.[queryText] || [];
+        const judgmentEntry = judgmentSet?.judgmentRatings?.find(
+          (entry) => entry.query === queryText
+        );
+        const judgments = judgmentEntry?.ratings || [];
 
         // Create document scores by matching evaluation documentIds with judgments
         const documentScores = evaluation.documentIds.map((docId) => {
@@ -141,6 +144,7 @@ export const EvaluationExperimentView: React.FC<EvaluationExperimentViewProps> =
               _id: resultIds,
             },
           },
+          size: resultIds.length,
         };
         const result = await http.post(ServiceEndpoints.GetSearchResults, {
           body: JSON.stringify({ query1: query }),

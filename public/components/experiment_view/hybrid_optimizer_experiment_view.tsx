@@ -95,8 +95,6 @@ export const HybridOptimizerExperimentView: React.FC<HybridOptimizerExperimentVi
             })
             .filter(Boolean);
 
-          console.log('[DEBUG] evaluationResultIds: ' + evaluationResultIds);
-
           // Fetch all evaluation results in one query
           const query = {
             index: 'search-relevance-evaluation-result',
@@ -107,7 +105,6 @@ export const HybridOptimizerExperimentView: React.FC<HybridOptimizerExperimentVi
             },
             size: evaluationResultIds.length,
           };
-          console.log('[DEBUG] query: ' + JSON.stringify(query));
 
           const result = await http.post(ServiceEndpoints.GetSearchResults, {
             body: JSON.stringify({ query1: query }),
@@ -129,12 +126,6 @@ export const HybridOptimizerExperimentView: React.FC<HybridOptimizerExperimentVi
           Object.entries(_experiment.results || {}).forEach(([queryText, configMap]) => {
             const variantMap = configMap?.[inputExperiment.searchConfigurationId];
             if (!variantMap) return;
-
-            console.log(
-              `[DEBUG] Processing query: ${queryText} with ${
-                Object.keys(variantMap).length
-              } variants`
-            );
             evaluationsByQueryAndVariant[queryText] = {};
 
             // Process all variants for this query
@@ -150,13 +141,6 @@ export const HybridOptimizerExperimentView: React.FC<HybridOptimizerExperimentVi
                 };
               }
             });
-
-            // Log how many variants were processed
-            console.log(
-              `[DEBUG] Processed ${
-                Object.keys(evaluationsByQueryAndVariant[queryText]).length
-              } variants for query ${queryText}`
-            );
           });
 
           setExperiment(_experiment as HybridOptimizerExperiment);

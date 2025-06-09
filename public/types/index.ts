@@ -127,6 +127,23 @@ export type HybridOptimizerExperiment = ExperimentBase & {
   results: HybridOptimizerResults;
 };
 
+export interface JudgmentRating {
+  docId: string;
+  rating: string;
+}
+
+export interface QueryJudgment {
+  query: string;
+  ratings: JudgmentRating[];
+}
+
+export interface JudgmentSet {
+  name: string;
+  description: string;
+  type: string;
+  judgmentRatings: QueryJudgment[];
+}
+
 export const printType = (type: string) => {
   switch (type) {
     case ExperimentType.PAIRWISE_COMPARISON:
